@@ -1,0 +1,8 @@
+1.1.0, 2016-06-01:
+- Module files and folders renaming.
+- Compatibility with xtc modified 2.x versions.
+- Creation of a new table to store module payment details.
+- Adding of french and english translations.
+
+1.0, 2011-09-14:
+- New PayZen payment module for xtc modified 1.x.
