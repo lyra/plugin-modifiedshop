@@ -1,26 +1,11 @@
 <?php
 /**
- * PayZen V2-Payment Module version 1.1.0 for xtc_modified 1.x-2.x. Support contact : support@payzen.eu.
+ * Copyright © Lyra Network.
+ * This file is part of PayZen plugin for modified eCommerce Shopsoftware. See COPYING.md for license details.
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
- *
- * @category  payment
- * @package   payzen
- * @author    Lyra Network (http://www.lyra-network.com/)
- * @copyright 2014-2016 Lyra Network and contributors
- * @license   http://www.gnu.org/licenses/old-licenses/gpl-2.0.html  GNU General Public License (GPL v2)
+ * @author    Lyra Network (https://www.lyra.com/)
+ * @copyright Lyra Network
+ * @license   http://www.gnu.org/licenses/old-licenses/gpl-2.0.html GNU General Public License (GPL v2)
  */
 
 require_once 'currency.php';
@@ -33,6 +18,11 @@ if (! class_exists('PayzenApi', false)) {
      */
     class PayzenApi
     {
+
+        const ALGO_SHA1 = 'SHA-1';
+        const ALGO_SHA256 = 'SHA-256';
+
+        public static $SUPPORTED_ALGOS = array(self::ALGO_SHA1, self::ALGO_SHA256);
 
         /**
          * The list of encodings supported by the API.
@@ -71,16 +61,26 @@ if (! class_exists('PayzenApi', false)) {
         }
 
         /**
-         * Returns an array of languages accepted by the PayZen payment platform.
+         * Returns an array of languages accepted by the payment gateway.
          *
          * @return array[string][string]
          */
         public static function getSupportedLanguages()
         {
             return array(
-                'de' => 'German', 'en' => 'English', 'zh' => 'Chinese', 'es' => 'Spanish', 'fr' => 'French',
-                'it' => 'Italian', 'ja' => 'Japanese', 'nl' => 'Dutch', 'pl' => 'Polish', 'pt' => 'Portuguese',
-                'ru' => 'Russian', 'sv' => 'Swedish', 'tr' => 'Turkish'
+                'de' => 'German',
+                'en' => 'English',
+                'zh' => 'Chinese',
+                'es' => 'Spanish',
+                'fr' => 'French',
+                'it' => 'Italian',
+                'ja' => 'Japanese',
+                'nl' => 'Dutch',
+                'pl' => 'Polish',
+                'pt' => 'Portuguese',
+                'ru' => 'Russian',
+                'sv' => 'Swedish',
+                'tr' => 'Turkish'
             );
         }
 
@@ -102,23 +102,22 @@ if (! class_exists('PayzenApi', false)) {
         }
 
         /**
-         * Return the list of currencies recognized by the PayZen platform.
+         * Return the list of currencies recognized by the payment gateway.
          *
          * @return array[int][PayzenCurrency]
          */
         public static function getSupportedCurrencies()
         {
             $currencies = array(
-                array('ARS', '032', 2), array('AUD', '036', 2), array('KHR', '116', 0), array('CAD', '124', 2),
-                array('CNY', '156', 1), array('HRK', '191', 2), array('CZK', '203', 2), array('DKK', '208', 2),
-                array('EKK', '233', 2), array('HKD', '344', 2), array('HUF', '348', 2), array('ISK', '352', 0),
-                array('IDR', '360', 0), array('JPY', '392', 0), array('KRW', '410', 0), array('LVL', '428', 2),
-                array('LTL', '440', 2), array('MYR', '458', 2), array('MXN', '484', 2), array('NZD', '554', 2),
-                array('NOK', '578', 2), array('PHP', '608', 2), array('RUB', '643', 2), array('SGD', '702', 2),
-                array('ZAR', '710', 2), array('SEK', '752', 2), array('CHF', '756', 2), array('THB', '764', 2),
-                array('GBP', '826', 2), array('USD', '840', 2), array('TWD', '901', 1), array('RON', '946', 2),
-                array('TRY', '949', 2), array('XOF', '952', 0), array('BGN', '975', 2), array('EUR', '978', 2),
-                array('PLN', '985', 2), array('BRL', '986', 2)
+                array('AUD', '036', 2), array('KHR', '116', 0), array('CAD', '124', 2), array('CNY', '156', 1),
+                array('CZK', '203', 2), array('DKK', '208', 2), array('HKD', '344', 2), array('HUF', '348', 2),
+                array('INR', '356', 2), array('IDR', '360', 2), array('JPY', '392', 0), array('KRW', '410', 0),
+                array('KWD', '414', 3), array('MYR', '458', 2), array('MXN', '484', 2), array('MAD', '504', 2),
+                array('NZD', '554', 2), array('NOK', '578', 2), array('PHP', '608', 2), array('RUB', '643', 2),
+                array('SGD', '702', 2), array('ZAR', '710', 2), array('SEK', '752', 2), array('CHF', '756', 2),
+                array('THB', '764', 2), array('TND', '788', 3), array('GBP', '826', 2), array('USD', '840', 2),
+                array('TWD', '901', 2), array('TRY', '949', 2), array('EUR', '978', 2), array('PLN', '985', 2),
+                array('BRL', '986', 2), array('ARS', '032', 2), array('COP', '170', 2), array('PEN', '604', 2)
             );
 
             $payzen_currencies = array();
@@ -206,46 +205,104 @@ if (! class_exists('PayzenApi', false)) {
         }
 
         /**
-         * Returns an array of card types accepted by the PayZen payment platform.
+         * Returns an array of card types accepted by the payment gateway.
          *
          * @return array[string][string]
          */
         public static function getSupportedCardTypes()
         {
             return array(
-                'CB' => 'CB', 'E-CARTEBLEUE' => 'E-Carte bleue', 'MAESTRO' => 'Maestro', 'MASTERCARD' => 'MasterCard',
-                'VISA' => 'Visa', 'VISA_ELECTRON' => 'Visa Electron', 'AMEX' => 'American Express',
-                'ACCORD_STORE' => 'Carte de paiement Banque Accord', 'ACCORD_STORE_SB' => 'Carte de paiement Banque Accord - Sandbox',
-                'ALINEA' => 'Carte Privative Alinea', 'ALINEA_CDX' => 'Carte cadeau Alinea',
-                'ALINEA_CDX_SB' => 'Carte cadeau Alinea - SandBox', 'ALINEA_SB' => 'Carte Privative Alinea - SandBox',
-                'AURORE-MULTI' => 'Carte Aurore', 'BANCONTACT' => 'Carte Maestro Bancontact Mistercash',
-                'BITCOIN' => 'Paiement par monnaie virtuelle', 'BIZZBEE_CDX' => 'Carte cadeau Bizzbee',
-                'BIZZBEE_CDX_SB' => 'Carte cadeau Bizzbee - Sandbox', 'BRICE_CDX' => 'Carte cadeau Brice',
-                'BRICE_CDX_SB' => 'Carte cadeau Brice - Sandbox', 'CDGP' => 'Carte Privilège', 'COF3XCB' => '3 fois CB Cofinoga',
-                'COF3XCB_SB' => '3 fois CB Cofinoga - Sandbox', 'COFINOGA' => 'Carte Be Smart', 'CORA_BLANCHE' => 'Carte Cora Blanche',
-                'CORA_PREM' => 'Carte Cora Premium', 'CORA_VISA' => 'Carte Cora Visa', 'DINERS' => 'Carte Diners Club',
-                'E_CV' => 'E-chèque vacance', 'EDENRED' => 'Ticket Restaurant', 'EDENRED_EC' => 'Ticket EcoCheque', 'GIROPAY' => 'Giropay',
-                'KLARNA' => 'Paiement par facture Klarna', 'IDEAL' => 'iDEAL virement bancaire', 'ILLICADO' => 'Carte cadeau Illicado',
-                'ILLICADO_SB' => 'Carte cadeau Illicado - Sandbox', 'JCB' => 'Carte JCB', 'JOUECLUB_CDX' => 'Carte cadeau Jouéclub',
-                'JOUECLUB_CDX_SB' => 'Carte cadeau Jouéclub - Sandbox', 'JULES_CDX' => 'Carte cadeau Jules',
-                'JULES_CDX_SB' => 'Carte cadeau Jules - Sandbox', 'ONEY' => 'Paiement en 3/4 fois Oney FacilyPay',
-                'ONEY_SANDBOX' => 'Paiement en 3/4 fois Oney FacilyPay - Sandbox', 'PAYLIB' => 'Paylib', 'PAYPAL' => 'PayPal',
-                'PAYPAL_SB' => 'PayPal - Sandbox', 'PAYSAFECARD' => 'Carte prépayée Paysafecard', 'POSTFINANCE' => 'PostFinance',
-                'POSTFINANCE_EFIN' => 'PostFinance mode E-finance', 'RUPAY' => 'RuPay', 'S-MONEY' => 'S-Money',
-                'SCT' => 'Virement SEPA', 'SDD' => 'Prélèvement SEPA', 'SOFORT_BANKING' => 'Sofort',
-                'TRUFFAUT_CDX' => 'Carte cadeau Truffaut'
+                'CB' => 'CB', 'E-CARTEBLEUE' => 'e-Carte Bleue', 'MAESTRO' => 'Maestro', 'MASTERCARD' => 'Mastercard',
+                'VISA' => 'Visa', 'VISA_ELECTRON' => 'Visa Electron', 'VPAY' => 'V PAY', 'AMEX' => 'American Express',
+                'ACCORD_STORE' => 'Cartes Enseignes Partenaires', 'ACCORD_STORE_SB' => 'Cartes Enseignes Partenaires (sandbox)',
+                'ALINEA_CDX' => 'Carte Cadeau Alinéa', 'ALINEA_CDX_SB' => 'Carte Cadeau Alinéa (sandbox)', 'ALIPAY' => 'Alipay',
+                'ALLOBEBE_CDX' => 'Carte Cadeau Allobébé', 'ALLOBEBE_CDX_SB' => 'Carte Cadeau Allobébé (sandbox)', 'APETIZ' => 'Apetiz',
+                'AUCHAN' => 'Carte Auchan', 'AUCHAN_SB' => 'Carte Auchan (sandbox)', 'AURORE-MULTI' => 'Cpay Aurore',
+                'BANCONTACT' => 'Bancontact Mistercash', 'BIZZBEE_CDX' => 'Carte Cadeau Bizzbee',
+                'BIZZBEE_CDX_SB' => 'Carte Cadeau Bizzbee (sandbox)', 'BOULANGER' => 'Carte b+', 'BOULANGER_SB' => 'Carte b+ (sandbox)',
+                'BRICE_CDX' => 'Carte Cadeau Brice', 'BRICE_CDX_SB' => 'Carte Cadeau Brice (sandbox)', 'BUT' => 'But', 'CABAL' => 'Cabal',
+                'CARNET' => 'Carnet', 'CA_DO_CARTE' => 'CA DO Carte', 'CHQ_DEJ' => 'Chèque Déjeuner', 'CONECS' => 'Conecs',
+                'CONFORAMA' => 'Conforama', 'CORA' => 'Cora', 'CORA_BLANCHE' => 'Cora blanche', 'CORA_PREM' => 'Cora Visa Premier',
+                'CORA_VISA' => 'Cora Visa', 'CVCO' => 'Chèque-Vacances Connect', 'DINERS' => 'Diners', 'DISCOVER' => 'Discover',
+                'ECCARD' => 'EC Card', 'EDENRED' => 'Ticket Restaurant', 'EDENRED_EC' => 'Ticket EcoCheque',
+                'EDENRED_SC' => 'Ticket Sport & Culture', 'EDENRED_TC' => 'Ticket Compliments', 'EDENRED_TR' => 'Ticket Restaurant',
+                'ELO' => 'Elo', 'E_CV' => 'e-Chèque-Vacances', 'FRANFINANCE_3X' => 'Paiement en 3 fois',
+                'FRANFINANCE_4X' => 'Paiement en 4 fois', 'FULLCB3X' => 'Paiement en 3 fois CB', 'FULLCB4X' => 'Paiement en 4 fois CB',
+                'GEMO_CDX' => 'Carte Cadeau Gémo', 'GEMO_CDX_SB' => 'Carte Cadeau Gémo (sandbox)', 'GIROPAY' => 'Giropay',
+                'GOOGLEPAY' => 'Google Pay', 'HIPER' => 'Hiper', 'HIPERCARD' => 'Hipercard', 'IDEAL' => 'iDEAL', 'JCB' => 'JCB',
+                'JOUECLUB_CDX' => 'Carte Cadeau Joué Club', 'JOUECLUB_CDX_SB' => 'Carte Cadeau Joué Club (sandbox)',
+                'JULES_CDX' => 'Carte Cadeau Jules', 'JULES_CDX_SB' => 'Carte Cadeau Jules (sandbox)', 'KLARNA' => 'Klarna',
+                'LECLERC' => 'Carte Reglo', 'MC_CORDOBESA' => 'Mastercard Cordobesa',
+                'MULTIBANCO' => 'Multibanco', 'MYBANK' => 'MyBank', 'NARANJA' => 'Naranja', 'NORAUTO' => 'Carte Norauto option Financement',
+                'NORAUTO_SB' => 'Carte Norauto option Financement (sandbox)', 'ONEY_3X_4X' => 'Paiement en 3 ou 4 fois Oney',
+                'ONEY_ENSEIGNE' => 'Cartes enseignes Oney', 'PAYDIREKT' => 'Paydirekt', 'PAYLIB' => 'Paylib', 'PAYPAL' => 'PayPal',
+                'PAYPAL_SB' => 'PayPal Sandbox', 'PICWIC' => 'Carte Picwic', 'PICWIC_SB' => 'Carte Picwic (sandbox)',
+                'POSTFINANCE' => 'PostFinance Card', 'POSTFINANCE_EFIN' => 'PostFinance E-Finance', 'PRESTO' => 'Presto',
+                'PRZELEWY24' => 'Przelewy24', 'S-MONEY' => 'S-money', 'SCT' => 'Virement SEPA', 'SDD' => 'Prélèvement SEPA',
+                'SODEXO' => 'Pass Restaurant', 'SOFORT_BANKING' => 'Sofort', 'SOROCRED' => 'Sorocred',
+                'TRUFFAUT_CDX' => 'Carte Cadeau Truffaut', 'UNION_PAY' => 'UnionPay', 'WECHAT' => 'WeChat Pay'
             );
         }
 
         /**
-         * Compute a PayZen signature. Parameters must be in UTF-8.
+         * Return the statuses list of finalized successful payments (authorized or captured).
+         * @return array
+         */
+        public static function getSuccessStatuses()
+        {
+            return array(
+                'AUTHORISED',
+                'AUTHORISED_TO_VALIDATE', // TODO is this a pending status?
+                'CAPTURED',
+                'ACCEPTED'
+            );
+        }
+
+        /**
+         * Return the statuses list of payments that are waiting confirmation (successful but
+         * the amount has not been transfered and is not yet guaranteed).
+         * @return array
+         */
+        public static function getPendingStatuses()
+        {
+            return array(
+                'INITIAL',
+                'WAITING_AUTHORISATION',
+                'WAITING_AUTHORISATION_TO_VALIDATE',
+                'UNDER_VERIFICATION',
+                'PRE_AUTHORISED',
+                'WAITING_FOR_PAYMENT'
+            );
+        }
+
+        /**
+         * Return the statuses list of payments interrupted by the buyer.
+         * @return array
+         */
+        public static function getCancelledStatuses()
+        {
+            return array('ABANDONED');
+        }
+
+        /**
+         * Return the statuses list of payments waiting manual validation from the gateway Back Office.
+         * @return array
+         */
+        public static function getToValidateStatuses()
+        {
+            return array('WAITING_AUTHORISATION_TO_VALIDATE', 'AUTHORISED_TO_VALIDATE');
+        }
+
+        /**
+         * Compute the signature. Parameters must be in UTF-8.
          *
-         * @param array[string][string] $parameters payment platform request/response parameters
+         * @param array[string][string] $parameters payment gateway request/response parameters
          * @param string $key shop certificate
+         * @param string $algo signature algorithm
          * @param boolean $hashed set to false to get the unhashed signature
          * @return string
          */
-        public static function sign($parameters, $key, $hashed = true)
+        public static function sign($parameters, $key, $algo, $hashed = true)
         {
             ksort($parameters);
 
@@ -257,30 +314,19 @@ if (! class_exists('PayzenApi', false)) {
             }
 
             $sign .= $key;
-            return $hashed ? sha1($sign) : $sign;
-        }
 
-        /**
-         * PHP is not yet a sufficiently advanced technology to be indistinguishable from magic...
-         * so don't use magic_quotes, they mess up with the platform response analysis.
-         *
-         * @param array $potentially_quoted_data
-         * @return mixed
-         */
-        public static function uncharm($potentially_quoted_data)
-        {
-            if (get_magic_quotes_gpc()) {
-                $sane = array();
-                foreach ($potentially_quoted_data as $k => $v) {
-                    $sane_key = stripslashes($k);
-                    $sane_value = is_array($v) ? self::uncharm($v) : stripslashes($v);
-                    $sane[$sane_key] = $sane_value;
-                }
-            } else {
-                $sane = $potentially_quoted_data;
+            if (! $hashed) {
+                return $sign;
             }
 
-            return $sane;
+            switch ($algo) {
+                case self::ALGO_SHA1:
+                    return sha1($sign);
+                case self::ALGO_SHA256:
+                    return base64_encode(hash_hmac('sha256', $sign, $key, true));
+                default:
+                    throw new \InvalidArgumentException("Unsupported algorithm passed : {$algo}.");
+            }
         }
     }
 }
