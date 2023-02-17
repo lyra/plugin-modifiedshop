@@ -8,6 +8,13 @@
  * @license   http://www.gnu.org/licenses/old-licenses/gpl-2.0.html GNU General Public License (GPL v2)
  */
 
+// Include autoloaders.
+require_once(DIR_FS_EXTERNAL . 'payzen/sdk-autoload.php');
+require_once(DIR_FS_EXTERNAL . 'payzen/payzen_logger.php');
+
+use Lyranetwork\Payzen\Sdk\Form\Api as PayzenApi;
+use Lyranetwork\Payzen\Sdk\Form\Request as PayzenRequest;
+use Lyranetwork\Payzen\Sdk\Form\Response as PayzenResponse;
 
 global $payzen_plugin_features;
 
@@ -17,7 +24,9 @@ $payzen_plugin_features = array(
     'shatwo' => true,
 );
 
-include_once (DIR_FS_CATALOG.DIR_ADMIN . 'includes/functions/payzen_output.php');
+include_once(DIR_FS_CATALOG . 'admin/includes/functions/payzen_output.php');
+require_once(DIR_FS_INC . 'xtc_get_shop_conf.inc.php');
+
 // Load module language file.
 require_once(DIR_FS_CATALOG . 'lang/' . $_SESSION['language'] . '/modules/payment/payzen.php');
 
@@ -25,9 +34,7 @@ defined('TABLE_PAYZEN_ORDERS_PAYMENT') or define('TABLE_PAYZEN_ORDERS_PAYMENT', 
 
 class payzen
 {
-    private static $GATEWAY_CODE = 'PayZen';
     private static $GATEWAY_NAME = 'PayZen';
-    private static $BACKOFFICE_NAME = 'PayZen';
     private static $GATEWAY_URL = 'https://secure.payzen.eu/vads-payment/';
     private static $SITE_ID = '12345678';
     private static $KEY_TEST = '1111111111111111';
@@ -38,11 +45,12 @@ class payzen
 
     private static $CMS_IDENTIFIER = 'modified_eCommerce_Shopsoftware_1.x-2.x';
     private static $SUPPORT_EMAIL = 'support@payzen.eu';
-    private static $PLUGIN_VERSION = '1.2.0';
+    private static $PLUGIN_VERSION = '1.2.1';
     private static $GATEWAY_VERSION = 'V2';
 
     var $code, $title, $description, $enabled;
     var $order_status;
+    var $logger;
 
     function __construct()
     {
@@ -68,9 +76,10 @@ class payzen
 
         $this->description .= MODULE_PAYMENT_PAYZEN_TEXT_DESCRIPTION . '<br/></br>';
         $this->description .= '<p>' . MODULE_PAYMENT_PAYZEN_DEVELOPED_BY . '<a href="http://www.lyra-network.com/" target="_blank">Lyra network</a></p>';
-        $this->description .= '<p>' . MODULE_PAYMENT_PAYZEN_CONTACT_EMAIL . '<a href="mailto:' . self::$SUPPORT_EMAIL . '">' . self::$SUPPORT_EMAIL . '</a></p>';
+        $this->description .= '<p>' . MODULE_PAYMENT_PAYZEN_CONTACT_EMAIL . PayzenApi::formatSupportEmails(self::$SUPPORT_EMAIL) . '</p>';
         $this->description .= '<p>' . MODULE_PAYMENT_PAYZEN_CONTRIB_VERSION . self::$PLUGIN_VERSION . '</p>';
         $this->description .= '<p>' . MODULE_PAYMENT_PAYZEN_GATEWAY_VERSION . self::$GATEWAY_VERSION . '</p>';
+        $this->description .= '<p>' . MODULE_PAYMENT_PAYZEN_DOC . self::getOnlineDocUri() . '</p>';
         $this->description .= '<p>' . MODULE_PAYMENT_PAYZEN_IPN_URL . HTTP_SERVER . DIR_WS_CATALOG . 'callback/payzen/process.php</p>';
 
         // Initialize enabled.
@@ -87,13 +96,33 @@ class payzen
         if (is_object($order)) {
             $this->update_status();
         }
+
+        // Init class logger.
+        $this->logger = new PayzenLogger(date('Y_m') . '_payzen.log');
+    }
+
+    function getOnlineDocUri()
+    {
+        // Get documentation links.
+        $languages = array(
+            'fr' => 'Français',
+            'en' => 'English',
+            'es' => 'Español',
+            'pt' => 'Português'
+            // Complete when other languages are managed.
+        );
+
+        $docsUri = "";
+        foreach (PayzenApi::getOnlineDocUri() as $lang => $docUri) {
+            $docsUri .= '<a style="margin-left: 10px; text-decoration: none; text-transform: uppercase; color: red;" href="' . $docUri . 'modified/sitemap.html" target="_blank">' . $languages[$lang] . '</a>';
+        }
+
+        return $docsUri;
     }
 
     function update_status()
     {
         global $order;
-
-        require_once DIR_FS_CATALOG . 'includes/external/payzen/api.php';
 
         if (! $this->enabled) {
             return;
@@ -165,7 +194,6 @@ class payzen
     {
         global $order, $xtPrice;
 
-        require_once DIR_FS_CATALOG . 'includes/external/payzen/request.php';
         $request = new PayzenRequest(get_supported_charset());
 
         // Admin configuration parameters.
@@ -212,7 +240,7 @@ class payzen
         defined('_VALID_XTC') or define('_VALID_XTC', true);
         require_once DIR_FS_CATALOG . (defined('DIR_ADMIN') ? DIR_ADMIN : 'admin/') . 'includes/version.php';
 
-        $contrib = 'modified_eCommerce_Shopsoftware_1.x-2.x_1.2.0' . '/' . PROJECT_MAJOR_VERSION . '.' . PROJECT_MINOR_VERSION . '/' . PHP_VERSION;
+        $contrib = self::$CMS_IDENTIFIER . '_' . self::$PLUGIN_VERSION . '/' . PROJECT_MAJOR_VERSION . '.' . PROJECT_MINOR_VERSION . '/' . PayzenApi::shortPhpVersion();
 
         // Activate 3ds?
         $threeds_mpi = null;
@@ -270,7 +298,10 @@ class payzen
         $request->addExtInfo('session_name', xtc_session_name());
         $request->addExtInfo('session_id', xtc_session_id());
 
-        $request->setFromArray($data);
+        $dataToLog = $request->getRequestFieldsArray(true, false);
+        $this->log('Data to be sent to payment gateway: ' . json_encode($dataToLog));
+
+        $request->setFromArray(array_map('stripslashes', $data));
         return $request->getRequestHtmlFields();
     }
 
@@ -278,21 +309,27 @@ class payzen
     {
         global $order, $payzen_response;
 
-        require_once DIR_FS_CATALOG . 'includes/external/payzen/response.php';
-
         $payzen_response = new PayzenResponse(
-                $_REQUEST,
-                MODULE_PAYMENT_PAYZEN_CTX_MODE,
-                MODULE_PAYMENT_PAYZEN_KEY_TEST,
-                MODULE_PAYMENT_PAYZEN_KEY_PROD,
-                MODULE_PAYMENT_PAYZEN_SIGN_ALGO
+            array_map('stripslashes', $_REQUEST),
+            MODULE_PAYMENT_PAYZEN_CTX_MODE,
+            MODULE_PAYMENT_PAYZEN_KEY_TEST,
+            MODULE_PAYMENT_PAYZEN_KEY_PROD,
+            MODULE_PAYMENT_PAYZEN_SIGN_ALGO
         );
 
         $from_server = $payzen_response->get('hash') != null;
+        if ($from_server) {
+            $this->log('IPN URL PROCESS START');
+        }
 
         // Check authenticity.
         if (! $payzen_response->isAuthentified()) {
+            $ip = $_SERVER['REMOTE_ADDR'];
+            $this->log("{$ip} tries to access modules/payment/payzen file without valid signature with parameters: " . json_encode($_REQUEST));
+            $this->log('Signature algorithm selected in module settings must be the same as one selected in gateway Back Office.');
+
             if ($from_server) {
+                $this->log('IPN URL PROCESS END');
                 die($payzen_response->getOutputForPlatform('auth_fail'));
             } else {
                 $_SESSION['payzen_error'] = MODULE_PAYMENT_PAYZEN_TECHNICAL_ERROR;
@@ -302,7 +339,9 @@ class payzen
 
         // Act according to case.
         if ($payzen_response->isAcceptedPayment()) {
-            if (! $this->is_processed_payment($payzen_response->get('trans_uuid'))) { // order not processed yet
+            if (! $this->is_processed_payment($payzen_response->get('trans_uuid'))) { // Order not processed yet.
+                $this->log("Payment accepted for order ID #{$payzen_response->get('order_id')}.");
+
                 // Save  card brand user choice.
                 $card_brand_choice = '';
                 if ($payzen_response->get('brand_management')) {
@@ -340,29 +379,38 @@ class payzen
 
                 if (! $from_server && (MODULE_PAYMENT_PAYZEN_CTX_MODE == 'TEST')) {
                     // Abnormal case : payment confirmed by client return, IPN URL not worked: show warning in test mode.
+                    $this->log("Payment has been processed by client return! This means the IPN URL did not work.");
                     $_SESSION['payzen_warn'] = true;
                 }
 
                 // Let checkout_process.php finish the job.
                 return false;
             } else {
+                $this->logger->logInfo("Payment success confirmed for order ID #{$payzen_response->get('order_id')}.");
+
                 // Successful payment confirmation.
                 if ($from_server) {
+                    $this->log('IPN URL PROCESS END');
                     die($payzen_response->getOutputForPlatform('payment_ok_already_done'));
                 }
 
                 return false;
             }
         } else {
+            $this->log("Payment failed for order ID #{$payzen_response->get('order_id')}.");
+
             // Payment failed or cancelled.
             if ($from_server) {
+                $this->log('IPN URL PROCESS END');
                 die($payzen_response->getOutputForPlatform('payment_ko'));
             } else {
                 $error = '';
-                $error .= MODULE_PAYMENT_PAYZEN_PAYMENT_ERROR;
-                $error .= ' ' . $payzen_response->getMessage();
-                $_SESSION['payzen_error'] = $error;
+                if (! $payzen_response->isCancelledPayment()) {
+                    $error .= MODULE_PAYMENT_PAYZEN_PAYMENT_ERROR;
+                    $_SESSION['payzen_error'] = $error;
+                }
 
+                $this->log("Redirect to checkout page.");
                 xtc_redirect(xtc_href_link(FILENAME_CHECKOUT_PAYMENT, 'payment_error=' . $this->code, 'SSL'));
             }
         }
@@ -376,9 +424,13 @@ class payzen
         xtc_db_query("UPDATE " . TABLE_PAYZEN_ORDERS_PAYMENT . " SET orders_id = " . $insert_id .
             " WHERE trans_uuid='" . $payzen_response->get('trans_uuid') . "'");
 
+        $this->log("Order #{$insert_id} created for gateway order ID #{$payzen_response->get('order_id')}.");
+
         $from_server = $payzen_response->get('hash') != null;
         if ($from_server) {
+            $this->log('IPN URL PROCESS END');
             $_SESSION['payzen_ipn'] = true;
+
             echo($payzen_response->getOutputForPlatform('payment_ok'));
         }
 
@@ -433,6 +485,7 @@ class payzen
             $error = array(
                 'error' => $_SESSION['payzen_error']
             );
+
             unset($_SESSION['payzen_error']);
         }
 
@@ -600,8 +653,6 @@ class payzen
 
     function admin_order($oID, $lang)
     {
-        require_once DIR_FS_CATALOG . 'includes/external/payzen/response.php';
-
         $oID = (int) $oID;
         if (! is_int($oID)) {
             return false;
@@ -662,5 +713,10 @@ class payzen
         $result = xtc_db_fetch_array($query);
 
         return (is_array($result) && $result['orders_id'] > 0);
+    }
+
+    public function log($message)
+    {
+        $this->logger->log($message);
     }
 }

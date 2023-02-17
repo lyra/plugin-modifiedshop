@@ -11,9 +11,10 @@
 /**
  * General functions to draw PayZen configuration parameters.
  * */
-global $payzen_supported_languages, $payzen_supported_cards;
 
-require_once DIR_FS_CATALOG . 'includes/external/payzen/api.php';
+use Lyranetwork\Payzen\Sdk\Form\Api as PayzenApi;
+
+global $payzen_supported_languages, $payzen_supported_cards;
 
 $payzen_supported_languages = PayzenApi::getSupportedLanguages();
 $payzen_supported_cards = PayzenApi::getSupportedCardTypes();
@@ -23,7 +24,9 @@ function payzen_cfg_pull_down_langs($value = '', $name)
     global $payzen_supported_languages;
 
     $name = 'configuration[' . xtc_output_string($name) . ']';
-    if (empty($value) && isset($GLOBALS[$name])) $value = stripslashes($GLOBALS[$name]);
+    if (empty($value) && isset($GLOBALS[$name])) {
+        $value = stripslashes($GLOBALS[$name]);
+    }
 
     $field = '<select name="' . $name . '">';
     foreach (array_keys($payzen_supported_languages) as $key) {
@@ -235,8 +238,6 @@ function payzen_cfg_draw_pull_down_sign_algos($value = '', $name)
 
     return $field;
 }
-
-
 
 function payzen_get_sign_algo_title($value)
 {

@@ -31,6 +31,7 @@ define('MODULE_PAYMENT_PAYZEN_CONTACT_EMAIL', 'Contact us: ');
 define('MODULE_PAYMENT_PAYZEN_CONTRIB_VERSION', 'Module version: ');
 define('MODULE_PAYMENT_PAYZEN_GATEWAY_VERSION', 'Gateway version: ');
 define('MODULE_PAYMENT_PAYZEN_CMS_VERSION', 'Tested with: ');
+define('MODULE_PAYMENT_PAYZEN_DOC', 'Click to view the module configuration documentation: ');
 define('MODULE_PAYMENT_PAYZEN_IPN_URL', 'IPN URL to copy into your PayZen Back Office > Settings > Notification rules:<br />');
 
 ## ADMINISTRATION INTERFACE - MODULE SETTINGS ##
@@ -115,8 +116,8 @@ define('MODULE_PAYMENT_PAYZEN_LANGUAGE_POLISH', 'Polish');
 
 #ADMINISTRATION INTERFACE EXTRA ORDER INFORMATIONS
 define('MODULE_PAYMENT_PAYZEN_PAYMENT_MEAN', 'Means of payment');
-define('MODULE_PAYMENT_PAYZEN_PAYMENT_CARD_BRAND_BUYER_CHOICE', 'Card brand chosen by buyer.');
-define('MODULE_PAYMENT_PAYZEN_PAYMENT_CARD_BRAND_DEFAULT_CHOICE','Default card brand used.');
+define('MODULE_PAYMENT_PAYZEN_PAYMENT_CARD_BRAND_BUYER_CHOICE', 'Card brand chosen by buyer');
+define('MODULE_PAYMENT_PAYZEN_PAYMENT_CARD_BRAND_DEFAULT_CHOICE','Default card brand used');
 define('MODULE_PAYMENT_PAYZEN_TRANSACTION_ID', 'Transaction ID');
 define('MODULE_PAYMENT_PAYZEN_CARD_NUMBER', 'Card number');
 define('MODULE_PAYMENT_PAYZEN_EXPIRATION_DATE', 'Expiration date');
