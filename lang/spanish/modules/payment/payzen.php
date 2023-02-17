@@ -31,6 +31,7 @@ define('MODULE_PAYMENT_PAYZEN_CONTACT_EMAIL', 'Cont&aacute;ctenos: ');
 define('MODULE_PAYMENT_PAYZEN_CONTRIB_VERSION', 'Versi&oacute;n del m&oacute;dulo: ');
 define('MODULE_PAYMENT_PAYZEN_GATEWAY_VERSION', 'Versi&oacute;n del portal: ');
 define('MODULE_PAYMENT_PAYZEN_CMS_VERSION', 'Probado con: ');
+define('MODULE_PAYMENT_PAYZEN_DOC', 'Haga clic para ver la documentación de la configuración del módulo: ');
 define('MODULE_PAYMENT_PAYZEN_IPN_URL', 'URL de notificaci&oacute;n a copiar en el Back Office PayZen > Configuraci&oacute;n > Reglas de notificaci&oacute;n: <br />');
 
 ## ADMINISTRATION INTERFACE - MODULE SETTINGS ##
@@ -68,6 +69,7 @@ define('MODULE_PAYMENT_PAYZEN_PAYMENT_CARDS_TITLE', 'Tipos de tarjeta');
 define('MODULE_PAYMENT_PAYZEN_PAYMENT_CARDS_DESC', 'El tipo(s) de tarjeta que se puede usar para el pago. No haga ninguna selección para usar la configuración del portal.');
 define('MODULE_PAYMENT_PAYZEN_3DS_MIN_AMOUNT_TITLE', 'Gestionar el 3DS');
 define('MODULE_PAYMENT_PAYZEN_3DS_MIN_AMOUNT_DESC', 'Monto por debajo del cual el comprador podr&iacute;a estar exento de de la autenticaci&oacute;n fuerte. Requiere suscripci&oacute;n a la opci&oacute;n «Selective 3DS1» o a la opci&oacute;n «Frictionless 3DS2». Para m&aacute;s informaci&oacute;n, consulte la documentaci&oacute;n del m&oacute;dulo.');
+
 ## ADMINISTRATION INTERFACE - AMOUNT RESTRICTIONS SETTINGS ##
 define('MODULE_PAYMENT_PAYZEN_AMOUNT_MIN_TITLE', 'Monto m&iacute;nimo');
 define('MODULE_PAYMENT_PAYZEN_AMOUNT_MIN_DESC', 'Monto m&iacute;nimo para activar este m&eacute;todo de pago.');
@@ -114,8 +116,8 @@ define('MODULE_PAYMENT_PAYZEN_LANGUAGE_POLISH', 'Polaco');
 
 #ADMINISTRATION INTERFACE EXTRA ORDER INFORMATIONS
 define('MODULE_PAYMENT_PAYZEN_PAYMENT_MEAN', 'Medio de pago');
-define('MODULE_PAYMENT_PAYZEN_PAYMENT_CARD_BRAND_BUYER_CHOICE', 'Marca de tarjeta elegida por el comprador.');
-define('MODULE_PAYMENT_PAYZEN_PAYMENT_CARD_BRAND_DEFAULT_CHOICE','Marca de tarjeta por defecto en uso.');
+define('MODULE_PAYMENT_PAYZEN_PAYMENT_CARD_BRAND_BUYER_CHOICE', 'Marca de tarjeta elegida por el comprador');
+define('MODULE_PAYMENT_PAYZEN_PAYMENT_CARD_BRAND_DEFAULT_CHOICE','Marca de tarjeta por defecto en uso');
 define('MODULE_PAYMENT_PAYZEN_TRANSACTION_ID', 'ID de transacci&oacute;n');
 define('MODULE_PAYMENT_PAYZEN_CARD_NUMBER', 'N&uacute;mero de la tarjeta');
 define('MODULE_PAYMENT_PAYZEN_EXPIRATION_DATE', 'Fecha de expiraci&oacute;n');

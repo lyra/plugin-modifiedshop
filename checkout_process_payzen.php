@@ -12,13 +12,15 @@
  * This file is an access point to standard checkout_success.php or checkout_process.php.
  */
 
-require_once 'includes/application_top.php';
+use Lyranetwork\Payzen\Sdk\Form\Response as PayzenResponse;
 
-require_once 'includes/external/payzen/response.php';
-require_once  'includes/modules/payment/payzen.php';
+require_once 'includes/application_top.php';
+require_once 'includes/modules/payment/payzen.php';
+
 $payment = new payzen();
+
 $response = new PayzenResponse(
-    $_REQUEST,
+    array_map('stripslashes', $_REQUEST),
     MODULE_PAYMENT_PAYZEN_CTX_MODE,
     MODULE_PAYMENT_PAYZEN_KEY_TEST,
     MODULE_PAYMENT_PAYZEN_KEY_PROD,
@@ -27,6 +29,10 @@ $response = new PayzenResponse(
 
 // Check authenticity.
 if (! $response->isAuthentified()) {
+    $ip = $_SERVER['REMOTE_ADDR'];
+    $payment->log("{$ip} tries to access modules/payment/payzen file without valid signature with parameters: " . json_encode($_REQUEST));
+    $payment->log('Signature algorithm selected in module settings must be the same as one selected in gateway Back Office.');
+
     $_SESSION['payzen_error'] = MODULE_PAYMENT_PAYZEN_TECHNICAL_ERROR;
     xtc_redirect(xtc_href_link(FILENAME_CHECKOUT_PAYMENT, 'payment_error=' . $payment->code, 'SSL', true));
 }
@@ -37,6 +43,7 @@ if (MODULE_PAYMENT_PAYZEN_CTX_MODE == 'TEST') {
 }
 
 if ($payment->is_processed_payment($response->get('trans_uuid'))) {
+    $payment->log("Order ID #{$response->get('order_id')} already processed. Redirect to success page.");
     xtc_redirect(xtc_href_link(FILENAME_CHECKOUT_SUCCESS, '', 'SSL', true));
 } else {
     $return_mode = '_' . strtoupper(MODULE_PAYMENT_PAYZEN_RETURN_MODE);

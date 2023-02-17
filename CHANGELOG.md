@@ -1,3 +1,10 @@
+1.2.1, 2023-02-17:
+- Bug fix: Fix error related to backend order details display.
+- Update list of supported payment means.
+- Update list of supported currencies.
+- Added field for online module documentation.
+- Added plugin logs.
+
 1.2.0, 2021-05-12:
 - Enable signature algorithm selection (SHA-1 or HMAC-SHA-256).
 - [prodfaq] Fix notice about shifting the shop to production mode.

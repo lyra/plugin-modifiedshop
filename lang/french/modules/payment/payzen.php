@@ -30,8 +30,8 @@ define('MODULE_PAYMENT_PAYZEN_DEVELOPED_BY', 'D&eacute;velopp&eacute; par: ');
 define('MODULE_PAYMENT_PAYZEN_CONTACT_EMAIL', 'Courriel de contact: ');
 define('MODULE_PAYMENT_PAYZEN_CONTRIB_VERSION', 'Version du module: ');
 define('MODULE_PAYMENT_PAYZEN_GATEWAY_VERSION', 'Version de la plateforme: ');
+define('MODULE_PAYMENT_PAYZEN_DOC', 'Cliquer pour accéder à la documentation de configuration du module: ');
 define('MODULE_PAYMENT_PAYZEN_IPN_URL', 'URL de notification &agrave; copier dans le Back Office PayZen > Param&eacute;trage > R&egrave;gles de notifications: <br />');
-
 
 ## ADMINISTRATION INTERFACE - MODULE SETTINGS ##
 define('MODULE_PAYMENT_PAYZEN_STATUS_TITLE', 'Activation');
@@ -115,8 +115,8 @@ define('MODULE_PAYMENT_PAYZEN_LANGUAGE_POLISH', 'Polonais');
 
 #ADMINISTRATION INTERFACE EXTRA ORDER INFORMATIONS
 define('MODULE_PAYMENT_PAYZEN_PAYMENT_MEAN', 'Moyen de paiement');
-define('MODULE_PAYMENT_PAYZEN_PAYMENT_CARD_BRAND_BUYER_CHOICE', 'Marque de carte choisie par l&#039;acheteur.');
-define('MODULE_PAYMENT_PAYZEN_PAYMENT_CARD_BRAND_DEFAULT_CHOICE','Marque de carte par d&eacute;faut utilis&eacute;e.');
+define('MODULE_PAYMENT_PAYZEN_PAYMENT_CARD_BRAND_BUYER_CHOICE', 'Marque de carte choisie par l&#039;acheteur');
+define('MODULE_PAYMENT_PAYZEN_PAYMENT_CARD_BRAND_DEFAULT_CHOICE','Marque de carte par d&eacute;faut utilis&eacute;e');
 define('MODULE_PAYMENT_PAYZEN_TRANSACTION_ID', 'Num&eacute;ro de transaction');
 define('MODULE_PAYMENT_PAYZEN_CARD_NUMBER', 'Num&eacute;ro de carte');
 define('MODULE_PAYMENT_PAYZEN_EXPIRATION_DATE', 'Date d&#039;expiration');
