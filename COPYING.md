@@ -1,4 +1,4 @@
-Copyright © 2011-2021 Lyra Network.
+Copyright © 2011-2023 Lyra Network.
 
 PayZen plugin for modified eCommerce Shopsoftware is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
